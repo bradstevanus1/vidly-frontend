@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import Pagination from "./common/pagination";
-import ListGroup from "./common/listGroup";
-import MoviesTable from "./moviesTable";
-import { getMovies } from "../services/fakeMovieService";
-import { paginate } from "../utils/paginate";
-import { getGenres } from "../services/fakeGenreService";
-import _ from "lodash";
+import React, { useState, useEffect } from 'react';
+import Pagination from './common/pagination';
+import ListGroup from './common/listGroup';
+import MoviesTable from './moviesTable';
+import { getMovies } from '../services/fakeMovieService';
+import { paginate } from '../utils/paginate';
+import { getGenres } from '../services/fakeGenreService';
+import _ from 'lodash';
+import { withRouter } from 'react-router-dom';
 
 function getPageData(pageSize, currentPage, sortColumn, selectedGenre, movies) {
   const filtered =
@@ -20,15 +21,19 @@ function getPageData(pageSize, currentPage, sortColumn, selectedGenre, movies) {
   return { totalCount: filtered.length, data: pageMovies };
 }
 
-function Movies() {
+function Movies({ history }) {
   const pageSize = 4;
-  const allGenresObj = { _id: "", name: "All Genres" };
+  const allGenresObj = { _id: '', name: 'All Genres' };
 
   const [movies, setMovies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [genres, setGenres] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState(allGenresObj);
-  const [sortColumn, setSortColumn] = useState({ path: "title", order: "asc" });
+  const [sortColumn, setSortColumn] = useState({ path: 'title', order: 'asc' });
+
+  function handleCickNewMovie() {
+    history.push('/movies/new');
+  }
 
   const handleDelete = function (movie) {
     const newMovies = movies.filter((m) => m._id !== movie._id);
@@ -84,6 +89,13 @@ function Movies() {
         />
       </div>
       <div className="col">
+        <button
+          className="btn btn-primary"
+          style={{ marginBottom: '20px' }}
+          onClick={handleCickNewMovie}
+        >
+          New Movie
+        </button>
         <p>Showing {totalCount} movies in the database</p>
         <MoviesTable
           movies={pageMovies}
@@ -103,4 +115,4 @@ function Movies() {
   );
 }
 
-export default Movies;
+export default withRouter(Movies);

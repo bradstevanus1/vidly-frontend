@@ -1,6 +1,6 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Link, NavLink } from 'react-router-dom';
 
 function Navbar({ home, links, selectedLink }) {
   return (
