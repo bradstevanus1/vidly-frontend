@@ -6,13 +6,25 @@ import { getMovies } from '../services/fakeMovieService';
 import { paginate } from '../utils/paginate';
 import { getGenres } from '../services/fakeGenreService';
 import _ from 'lodash';
-import { withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import SearchBox from './common/SearchBox';
 
-function getPageData(pageSize, currentPage, sortColumn, selectedGenre, movies) {
-  const filtered =
-    selectedGenre && selectedGenre._id
-      ? movies.filter((m) => m.genre._id === selectedGenre._id)
-      : movies;
+function getPageData(
+  pageSize,
+  currentPage,
+  sortColumn,
+  selectedGenre,
+  searchQuery,
+  movies
+) {
+  let filtered = movies;
+  if (searchQuery) {
+    filtered = movies.filter((m) =>
+      m.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  } else if (selectedGenre && selectedGenre._id) {
+    filtered = movies.filter((m) => m.genre._id === selectedGenre._id);
+  }
 
   const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
 
@@ -21,7 +33,7 @@ function getPageData(pageSize, currentPage, sortColumn, selectedGenre, movies) {
   return { totalCount: filtered.length, data: pageMovies };
 }
 
-function Movies({ history }) {
+function Movies() {
   const pageSize = 4;
   const allGenresObj = { _id: '', name: 'All Genres' };
 
@@ -30,10 +42,7 @@ function Movies({ history }) {
   const [genres, setGenres] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState(allGenresObj);
   const [sortColumn, setSortColumn] = useState({ path: 'title', order: 'asc' });
-
-  function handleCickNewMovie() {
-    history.push('/movies/new');
-  }
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleDelete = function (movie) {
     const newMovies = movies.filter((m) => m._id !== movie._id);
@@ -55,11 +64,18 @@ function Movies({ history }) {
   const handleGenreSelect = function (genre) {
     setSelectedGenre(genre);
     setCurrentPage(1);
+    setSearchQuery('');
   };
 
   const handleSort = function (sortColumn) {
     setSortColumn(sortColumn);
   };
+
+  function handleSearch(query) {
+    setSearchQuery(query);
+    setSelectedGenre(allGenresObj);
+    setCurrentPage(1);
+  }
 
   useEffect(() => {
     setMovies(getMovies());
@@ -76,6 +92,7 @@ function Movies({ history }) {
     currentPage,
     sortColumn,
     selectedGenre,
+    searchQuery,
     movies
   );
 
@@ -89,14 +106,15 @@ function Movies({ history }) {
         />
       </div>
       <div className="col">
-        <button
+        <Link
+          to="/movies/new"
           className="btn btn-primary"
           style={{ marginBottom: '20px' }}
-          onClick={handleCickNewMovie}
         >
           New Movie
-        </button>
+        </Link>
         <p>Showing {totalCount} movies in the database</p>
+        <SearchBox value={searchQuery} onChange={handleSearch} />
         <MoviesTable
           movies={pageMovies}
           sortColumn={sortColumn}
@@ -115,4 +133,4 @@ function Movies({ history }) {
   );
 }
 
-export default withRouter(Movies);
+export default Movies;
