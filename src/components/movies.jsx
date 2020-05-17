@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Pagination from './common/pagination';
 import ListGroup from './common/listGroup';
+import { toast } from 'react-toastify';
 import MoviesTable from './moviesTable';
-import { getMovies } from '../services/fakeMovieService';
+import { getMovies, deleteMovie } from '../services/movieService';
 import { paginate } from '../utils/paginate';
-import { getGenres } from '../services/fakeGenreService';
+import { getGenres } from '../services/genreService';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import SearchBox from './common/SearchBox';
@@ -40,13 +41,26 @@ function Movies() {
   const [movies, setMovies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [genres, setGenres] = useState([]);
-  const [selectedGenre, setSelectedGenre] = useState(allGenresObj);
+  const [selectedGenre, setSelectedGenre] = useState(null);
   const [sortColumn, setSortColumn] = useState({ path: 'title', order: 'asc' });
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleDelete = function (movie) {
+  const handleDelete = async function (movie) {
+    const originalMovies = movies;
+
     const newMovies = movies.filter((m) => m._id !== movie._id);
     setMovies(newMovies);
+
+    try {
+      await deleteMovie(movie._id);
+    } catch (ex) {
+      console.log('exception:', ex);
+      if (ex.response && ex.response.status === 404) {
+        toast.error('This movie has already been deleted.');
+      }
+
+      setMovies(originalMovies);
+    }
   };
 
   const handleLike = function (movie) {
@@ -78,9 +92,18 @@ function Movies() {
   }
 
   useEffect(() => {
-    setMovies(getMovies());
-    const genres = [allGenresObj, ...getGenres()];
-    setGenres(genres);
+    async function fetchMovies() {
+      const { data: genres } = await getMovies();
+      setMovies(genres);
+    }
+    fetchMovies();
+
+    async function fetchGenres() {
+      let { data } = await getGenres();
+      const genres = [allGenresObj, ...data];
+      setGenres(genres);
+    }
+    fetchGenres();
   }, []);
 
   if (movies.length === 0) {

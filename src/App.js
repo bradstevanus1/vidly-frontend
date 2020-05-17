@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import Movies from './components/movies';
 import Navbar from './components/common/navbar';
 import Customers from './components/customers';
@@ -7,9 +8,10 @@ import Rentals from './components/rentals';
 import NotFound from './components/notFound';
 import MovieForm from './components/movieForm';
 import LoginForm from './components/loginForm';
+import RegisterForm from './components/registerForm';
 
 import './App.css';
-import RegisterForm from './components/registerForm';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const home = {
@@ -38,6 +40,7 @@ function App() {
 
   return (
     <>
+      <ToastContainer />
       <Navbar home={home} links={links} selectedLink={links[0]} />
       <main className="container">
         <Switch>
